@@ -99,6 +99,33 @@
     color:#fff;
   }
 
+  .pagination{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    margin-top:24px;
+  }
+  .page-btn{
+    padding:9px 16px;
+    border:1.5px solid var(--indigo-mid);
+    background:#fff;
+    color:var(--indigo-mid);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .page-btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  .page-indicator{
+    font-size:13px;
+    color:var(--khaki);
+    min-width:50px;
+    text-align:center;
+  }
+
   .grid{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
@@ -220,6 +247,7 @@
   <div id="year-tabs" class="year-tabs" style="display:none;"></div>
 
   <div id="grid" class="grid"></div>
+  <div id="pagination" class="pagination"></div>
   <div id="empty-msg" class="empty" style="display:none;">まだ公開されている写真はありません</div>
 </div>
 
@@ -238,6 +266,7 @@ const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu8iWmrG1pRTN1JB
 const gridEl = document.getElementById('grid');
 const emptyMsg = document.getElementById('empty-msg');
 const yearTabs = document.getElementById('year-tabs');
+const pagination = document.getElementById('pagination');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxMsg = document.getElementById('lightbox-msg');
@@ -290,6 +319,8 @@ async function toggleLike(rowTime, btnEl, countEl){
 
 let allGalleryItems = []; // 全年分の投稿を保持しておく
 let selectedYear = null;
+let currentPage = 1;
+const ITEMS_PER_PAGE = 18; // 1ページあたりの表示件数
 
 function extractYear(timeStr){
   // 投稿日時(例:"Wed Aug 05 2026 06:48:59 GMT+0900")から年を取り出す
@@ -315,6 +346,7 @@ function renderYearTabs(){
   yearTabs.querySelectorAll('.year-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       selectedYear = parseInt(tab.dataset.year, 10);
+      currentPage = 1;
       renderYearTabs();
       renderGalleryGrid();
     });
@@ -322,19 +354,27 @@ function renderYearTabs(){
 }
 
 function renderGalleryGrid(){
-  const items = selectedYear
+  const items = (selectedYear
     ? allGalleryItems.filter(it => extractYear(it.time) === selectedYear)
-    : allGalleryItems;
+    : allGalleryItems).slice().reverse(); // 新しい投稿が先
 
   if(items.length === 0){
     emptyMsg.style.display = 'block';
     emptyMsg.textContent = 'この年の写真はまだありません';
     gridEl.innerHTML = '';
+    pagination.innerHTML = '';
     return;
   }
+
+  const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  if(currentPage < 1) currentPage = 1;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageItems = items.slice(start, start + ITEMS_PER_PAGE);
+
   emptyMsg.style.display = 'none';
   gridEl.innerHTML = '';
-  items.slice().reverse().forEach(item => {
+  pageItems.forEach(item => {
     const isLiked = likedSet.has(item.time);
     const card = document.createElement('div');
     card.className = 'card';
@@ -367,6 +407,32 @@ function renderGalleryGrid(){
     });
     gridEl.appendChild(card);
   });
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  if(totalPages <= 1){
+    pagination.innerHTML = '';
+    return;
+  }
+  pagination.innerHTML = `
+    <button class="page-btn" id="prev-page" ${currentPage === 1 ? 'disabled' : ''}>← 前へ</button>
+    <span class="page-indicator">${currentPage} / ${totalPages}</span>
+    <button class="page-btn" id="next-page" ${currentPage === totalPages ? 'disabled' : ''}>次へ →</button>
+  `;
+  document.getElementById('prev-page').addEventListener('click', () => {
+    if(currentPage > 1){
+      currentPage--;
+      renderGalleryGrid();
+      gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  document.getElementById('next-page').addEventListener('click', () => {
+    currentPage++;
+    renderGalleryGrid();
+    gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 async function loadGallery(){
@@ -385,6 +451,7 @@ async function loadGallery(){
       emptyMsg.textContent = 'まだ公開されている写真はありません';
       emptyMsg.style.display = 'block';
       gridEl.innerHTML = '';
+      pagination.innerHTML = '';
       yearTabs.style.display = 'none';
       return;
     }
