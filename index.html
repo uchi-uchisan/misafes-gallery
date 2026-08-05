@@ -68,6 +68,26 @@
     margin:22px 0 24px; line-height:1.8;
   }
 
+  .year-tabs{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .year-tab{
+    padding:7px 18px;
+    border:1.5px solid var(--indigo-mid);
+    color:var(--indigo-mid);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .year-tab.active{
+    background:var(--indigo-mid);
+    color:#fff;
+  }
+
   .grid{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
@@ -158,6 +178,8 @@
     <span style="font-size:11px; opacity:0.85;">掲載中の写真について、取り下げをご希望の場合は、<a href="mailto:misaoyama.chonaikai@gmail.com" style="color:inherit;">misaoyama.chonaikai@gmail.com</a> までご連絡ください。</span>
   </div>
 
+  <div id="year-tabs" class="year-tabs" style="display:none;"></div>
+
   <div id="grid" class="grid"></div>
   <div id="empty-msg" class="empty" style="display:none;">まだ公開されている写真はありません</div>
 </div>
@@ -176,6 +198,7 @@ const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu8iWmrG1pRTN1JB
 
 const gridEl = document.getElementById('grid');
 const emptyMsg = document.getElementById('empty-msg');
+const yearTabs = document.getElementById('year-tabs');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxMsg = document.getElementById('lightbox-msg');
@@ -226,47 +249,98 @@ async function toggleLike(rowTime, btnEl, countEl){
   }
 }
 
+let allGalleryItems = []; // 全年分の投稿を保持しておく
+let selectedYear = null;
+
+function extractYear(timeStr){
+  // 投稿日時(例:"Wed Aug 05 2026 06:48:59 GMT+0900")から年を取り出す
+  const m = (timeStr || '').match(/\b(20\d{2})\b/);
+  if(m) return parseInt(m[1], 10);
+  const d = new Date(timeStr);
+  return isNaN(d.getFullYear()) ? null : d.getFullYear();
+}
+
+function renderYearTabs(){
+  const years = Array.from(new Set(allGalleryItems.map(it => extractYear(it.time)).filter(Boolean)))
+    .sort((a, b) => b - a); // 新しい年が先
+  if(years.length <= 1){
+    yearTabs.innerHTML = '';
+    yearTabs.style.display = 'none';
+    return;
+  }
+  yearTabs.style.display = 'flex';
+  if(!selectedYear || !years.includes(selectedYear)) selectedYear = years[0];
+  yearTabs.innerHTML = years.map(y =>
+    `<div class="year-tab ${y === selectedYear ? 'active' : ''}" data-year="${y}">${y}年</div>`
+  ).join('');
+  yearTabs.querySelectorAll('.year-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      selectedYear = parseInt(tab.dataset.year, 10);
+      renderYearTabs();
+      renderGalleryGrid();
+    });
+  });
+}
+
+function renderGalleryGrid(){
+  const items = selectedYear
+    ? allGalleryItems.filter(it => extractYear(it.time) === selectedYear)
+    : allGalleryItems;
+
+  if(items.length === 0){
+    emptyMsg.style.display = 'block';
+    emptyMsg.textContent = 'この年の写真はまだありません';
+    gridEl.innerHTML = '';
+    return;
+  }
+  emptyMsg.style.display = 'none';
+  gridEl.innerHTML = '';
+  items.slice().reverse().forEach(item => {
+    const isLiked = likedSet.has(item.time);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img class="thumb" src="${item.photoUrl}" loading="lazy">
+      ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
+      <div class="like-row">
+        <div class="like-btn ${isLiked ? 'liked' : ''}">
+          <span class="heart">${isLiked ? '❤️' : '🤍'}</span>
+          <span class="like-count">${item.likes || 0}</span>
+        </div>
+      </div>
+    `;
+    const thumbEl = card.querySelector('.thumb');
+    const likeBtn = card.querySelector('.like-btn');
+    const countEl = card.querySelector('.like-count');
+    thumbEl.addEventListener('click', () => {
+      lightboxImg.src = item.photoUrl;
+      lightboxMsg.textContent = item.message || '';
+      lightbox.classList.add('active');
+    });
+    likeBtn.addEventListener('click', () => {
+      likeBtn.querySelector('.heart').textContent = likeBtn.classList.contains('liked') ? '🤍' : '❤️';
+      toggleLike(item.time, likeBtn, countEl);
+    });
+    gridEl.appendChild(card);
+  });
+}
+
 async function loadGallery(){
   try{
     const res = await fetch(APPSCRIPT_URL + '?action=getGalleryApproved', { cache: 'no-store' });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const items = await res.json();
+    allGalleryItems = items;
 
     if(items.length === 0){
+      emptyMsg.textContent = 'まだ公開されている写真はありません';
       emptyMsg.style.display = 'block';
       gridEl.innerHTML = '';
+      yearTabs.style.display = 'none';
       return;
     }
-    emptyMsg.style.display = 'none';
-    gridEl.innerHTML = '';
-    items.slice().reverse().forEach(item => {
-      const isLiked = likedSet.has(item.time);
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img class="thumb" src="${item.photoUrl}" loading="lazy">
-        ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
-        <div class="like-row">
-          <div class="like-btn ${isLiked ? 'liked' : ''}">
-            <span class="heart">${isLiked ? '❤️' : '🤍'}</span>
-            <span class="like-count">${item.likes || 0}</span>
-          </div>
-        </div>
-      `;
-      const thumbEl = card.querySelector('.thumb');
-      const likeBtn = card.querySelector('.like-btn');
-      const countEl = card.querySelector('.like-count');
-      thumbEl.addEventListener('click', () => {
-        lightboxImg.src = item.photoUrl;
-        lightboxMsg.textContent = item.message || '';
-        lightbox.classList.add('active');
-      });
-      likeBtn.addEventListener('click', () => {
-        likeBtn.querySelector('.heart').textContent = likeBtn.classList.contains('liked') ? '🤍' : '❤️';
-        toggleLike(item.time, likeBtn, countEl);
-      });
-      gridEl.appendChild(card);
-    });
+    renderYearTabs();
+    renderGalleryGrid();
   }catch(err){
     emptyMsg.textContent = '読み込みに失敗しました。しばらくしてから再度お試しください';
     emptyMsg.style.display = 'block';
