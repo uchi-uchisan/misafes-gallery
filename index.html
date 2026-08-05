@@ -435,17 +435,43 @@ function renderPagination(totalPages){
   });
 }
 
-async function loadGallery(){
-  // まずは「読み込み中」の表示を出しておく
-  emptyMsg.innerHTML = '<div class="spinner"></div><div>読み込み中です…</div>';
-  emptyMsg.style.display = 'block';
-  gridEl.innerHTML = '';
+const CACHE_KEY = 'misafes_gallery_cache_v1';
 
+function loadFromCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(err){ return null; }
+}
+function saveToCache(items){
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(items)); }catch(err){}
+}
+
+async function loadGallery(){
+  const cached = loadFromCache();
+
+  if(cached && cached.length > 0){
+    // キャッシュがあれば、通信を待たずにすぐ表示する
+    allGalleryItems = cached;
+    renderYearTabs();
+    renderGalleryGrid();
+  }else{
+    // 初回など、キャッシュがない場合だけ「読み込み中」を出す
+    emptyMsg.innerHTML = '<div class="spinner"></div><div>読み込み中です…</div>';
+    emptyMsg.style.display = 'block';
+    gridEl.innerHTML = '';
+  }
+
+  // 裏側で常に最新版を取りに行き、内容に変化があれば静かに更新する
   try{
     const res = await fetch(APPSCRIPT_URL + '?action=getGalleryApproved', { cache: 'no-store' });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const items = await res.json();
+
+    const changed = JSON.stringify(items) !== JSON.stringify(cached);
     allGalleryItems = items;
+    saveToCache(items);
 
     if(items.length === 0){
       emptyMsg.textContent = 'まだ公開されている写真はありません';
@@ -455,11 +481,16 @@ async function loadGallery(){
       yearTabs.style.display = 'none';
       return;
     }
-    renderYearTabs();
-    renderGalleryGrid();
+    if(changed || !cached){
+      renderYearTabs();
+      renderGalleryGrid();
+    }
   }catch(err){
-    emptyMsg.textContent = '読み込みに失敗しました。しばらくしてから再度お試しください';
-    emptyMsg.style.display = 'block';
+    if(!cached){
+      emptyMsg.textContent = '読み込みに失敗しました。しばらくしてから再度お試しください';
+      emptyMsg.style.display = 'block';
+    }
+    // キャッシュがあれば、通信エラーでも表示済みの内容をそのまま見せておく
   }
 }
 
