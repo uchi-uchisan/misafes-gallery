@@ -14,7 +14,7 @@
     --gold: #ffffff;
     --gold-deep: #a3801c;
     --heart: #b5624f;
-    --khaki: rgba(255,248,232,0.9);
+    --khaki: rgba(34,36,42,0.6);
     --paper: #f7f2e6;
     --ink: #22242a;
   }
@@ -22,10 +22,7 @@
   html{ background:var(--indigo-deep); }
   body{
     min-height:100vh;
-    background:var(--indigo-deep);
-    background-image:
-      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 26px, rgba(201,162,39,0.045) 27px, transparent 28px);
-    background-size:52px 52px;
+    background:#ffffff;
     font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
     color:var(--ink);
   }
@@ -81,8 +78,6 @@
   }
   .card{
     background:var(--paper);
-    border:2px solid var(--indigo-mid);
-    box-shadow:4px 4px 0 rgba(0,0,0,0.25);
   }
   .card .thumb{ cursor:pointer; display:block; position:relative; }
   .card img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }
