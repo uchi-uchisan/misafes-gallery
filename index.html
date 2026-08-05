@@ -110,19 +110,25 @@
   .card{
     background:var(--paper);
   }
-  .card .thumb{ cursor:pointer; display:block; position:relative; }
-  .card img{
-    width:100%; aspect-ratio:1/1; object-fit:cover; display:block;
-    background-color:rgba(201,162,39,0.18);
-    background-image:linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    background-size:60% 100%;
-    background-repeat:no-repeat;
-    animation:shimmer 1.4s infinite;
+  .card .thumb{
+    cursor:pointer; display:block; position:relative;
+    aspect-ratio:1/1;
+    overflow:hidden;
+    background-color:#e8d9a8;
+    background-image:linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.75) 50%, transparent 70%);
+    background-size:250% 100%;
+    animation:shimmer 1.3s infinite;
   }
-  .card img.loaded{ animation:none; background:none; }
+  .card .thumb.loaded{ animation:none; background:none; }
+  .card img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    opacity:0;
+    transition:opacity 0.25s;
+  }
+  .card .thumb.loaded img{ opacity:1; }
   @keyframes shimmer{
-    0%{ background-position:-60% 0; }
-    100%{ background-position:160% 0; }
+    0%{ background-position:150% 0; }
+    100%{ background-position:-150% 0; }
   }
   .card .msg{
     font-size:11.5px;
@@ -323,7 +329,9 @@ function renderGalleryGrid(){
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <img class="thumb" src="${item.photoUrl}" loading="lazy">
+      <div class="thumb">
+        <img src="${item.photoUrl}" loading="lazy">
+      </div>
       ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
       <div class="like-row">
         <div class="like-btn ${isLiked ? 'liked' : ''}">
@@ -333,10 +341,11 @@ function renderGalleryGrid(){
       </div>
     `;
     const thumbEl = card.querySelector('.thumb');
+    const imgEl = thumbEl.querySelector('img');
     const likeBtn = card.querySelector('.like-btn');
     const countEl = card.querySelector('.like-count');
-    if(thumbEl.complete){ thumbEl.classList.add('loaded'); }
-    else{ thumbEl.addEventListener('load', () => thumbEl.classList.add('loaded')); }
+    if(imgEl.complete && imgEl.naturalWidth > 0){ thumbEl.classList.add('loaded'); }
+    else{ imgEl.addEventListener('load', () => thumbEl.classList.add('loaded')); }
     thumbEl.addEventListener('click', () => {
       lightboxImg.src = item.photoUrl;
       lightboxMsg.textContent = item.message || '';
