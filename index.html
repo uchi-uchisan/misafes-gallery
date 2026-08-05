@@ -168,6 +168,16 @@
     font-size:13px;
     padding:60px 0;
   }
+  .spinner{
+    display:inline-block;
+    width:22px; height:22px;
+    border:3px solid rgba(201,162,39,0.25);
+    border-top-color:var(--indigo-mid);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin-bottom:10px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
 
   #lightbox{
     position:fixed; inset:0;
@@ -360,6 +370,11 @@ function renderGalleryGrid(){
 }
 
 async function loadGallery(){
+  // まずは「読み込み中」の表示を出しておく
+  emptyMsg.innerHTML = '<div class="spinner"></div><div>読み込み中です…</div>';
+  emptyMsg.style.display = 'block';
+  gridEl.innerHTML = '';
+
   try{
     const res = await fetch(APPSCRIPT_URL + '?action=getGalleryApproved', { cache: 'no-store' });
     if(!res.ok) throw new Error('HTTP ' + res.status);
