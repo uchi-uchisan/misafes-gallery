@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>みさフェス フォトギャラリー</title>
+
+<!-- ホーム画面に追加した時、アプリのように全画面で開くための設定 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c97a1f">
+
+<!-- iPhone(Safari)用の設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="みさフェス">
+<link rel="apple-touch-icon" href="icon-180.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -100,7 +111,19 @@
     background:var(--paper);
   }
   .card .thumb{ cursor:pointer; display:block; position:relative; }
-  .card img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }
+  .card img{
+    width:100%; aspect-ratio:1/1; object-fit:cover; display:block;
+    background:linear-gradient(90deg, rgba(201,162,39,0.12), rgba(201,162,39,0.22), rgba(201,162,39,0.12));
+    background-size:200% 100%;
+    animation:shimmer 1.4s infinite;
+    opacity:0;
+    transition:opacity 0.3s;
+  }
+  .card img.loaded{ animation:none; background:none; opacity:1; }
+  @keyframes shimmer{
+    0%{ background-position:200% 0; }
+    100%{ background-position:-200% 0; }
+  }
   .card .msg{
     font-size:11.5px;
     padding:9px 11px 5px;
@@ -312,6 +335,8 @@ function renderGalleryGrid(){
     const thumbEl = card.querySelector('.thumb');
     const likeBtn = card.querySelector('.like-btn');
     const countEl = card.querySelector('.like-count');
+    if(thumbEl.complete){ thumbEl.classList.add('loaded'); }
+    else{ thumbEl.addEventListener('load', () => thumbEl.classList.add('loaded')); }
     thumbEl.addEventListener('click', () => {
       lightboxImg.src = item.photoUrl;
       lightboxMsg.textContent = item.message || '';
