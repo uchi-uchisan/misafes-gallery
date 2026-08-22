@@ -498,6 +498,7 @@ lightboxClose.addEventListener('click', () => lightbox.classList.remove('active'
 lightbox.addEventListener('click', e => { if(e.target === lightbox) lightbox.classList.remove('active'); });
 
 loadGallery();
+setInterval(loadGallery, 15000); // 15秒おきに自動更新(変化がなければ、画面はそのまま静かに保たれます)
 </script>
 </body>
 </html>
