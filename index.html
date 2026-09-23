@@ -3,157 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ギャラリー承認(スタッフ専用)</title>
+<title>みさフェス フォトギャラリー</title>
+
+<!-- ホーム画面に追加した時、アプリのように全画面で開くための設定 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c97a1f">
+
+<!-- iPhone(Safari)用の設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="みさフェス">
+<link rel="apple-touch-icon" href="icon-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --night: #1a1024;
-    --night-deep: #120b1a;
-    --lantern: #c9401f;
-    --gold: #d4a843;
-    --paper: #f5ece0;
-    --ink: #e9e4d8;
+    --indigo-deep: #c97a1f;
+    --indigo-mid: #e0942f;
+    --gold: #ffffff;
+    --gold-deep: #a3801c;
+    --heart: #b5624f;
+    --khaki: rgba(34,36,42,0.6);
+    --paper: #f7f2e6;
+    --ink: #22242a;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{ height:100%; background:var(--night-deep); font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif; overflow-y:auto; }
-  .wrap{ max-width:560px; margin:0 auto; padding:28px 18px 60px; }
-  .eyebrow{ color:var(--gold); letter-spacing:0.3em; font-size:11px; text-align:center; margin-bottom:8px; }
-  h1{ color:var(--paper); text-align:center; font-size:20px; margin-bottom:6px; }
-  .sub{ text-align:center; font-size:12px; color:rgba(233,228,216,0.6); margin-bottom:22px; }
-  .warn-box{
-    background:rgba(201,64,31,0.12);
-    border:1px solid rgba(201,64,31,0.4);
-    border-radius:12px;
-    padding:14px 16px;
-    font-size:12px;
+  html{ background:var(--indigo-deep); }
+  body{
+    min-height:100vh;
+    background:#ffffff;
+    font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
     color:var(--ink);
-    line-height:1.7;
-    margin-bottom:22px;
   }
-  .count-row{
-    display:flex; justify-content:space-between; align-items:center;
-    color:var(--gold); font-size:13px; margin-bottom:14px;
+
+  /* ---------- 暖簾風ヘッダー ---------- */
+  .noren{
+    position:relative;
+    background:var(--gold);
+    padding:38px 0 24px;
+    text-align:center;
   }
-  .count-badge{ background:rgba(212,168,67,0.15); padding:3px 12px; border-radius:999px; }
-  .empty{ text-align:center; color:rgba(233,228,216,0.4); font-size:13px; padding:40px 0; }
-  .item{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(212,168,67,0.25);
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:16px;
+  .noren-fringe{
+    height:16px;
+    display:flex;
+    justify-content:space-between;
+    padding:0 20px;
   }
-  .item img{ width:100%; border-radius:10px; margin-bottom:10px; display:block; }
-  .item .photo-wrap{ position:relative; margin-bottom:10px; }
-  .item.checking img{
-    filter:blur(20px);
-    pointer-events:none;
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    user-select:none;
+  .noren-fringe span{
+    width:16px;
+    height:100%;
+    background:var(--gold);
+    flex-shrink:0;
   }
-  .checking-badge{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--gold); font-size:13px; font-weight:600;
-    background:rgba(18,11,26,0.35);
-    border-radius:10px;
+  .noren-inner{ padding:0 20px; }
+  .noren-eyebrow{
+    font-family:"RocknRoll One", sans-serif;
+    color:var(--indigo-deep);
+    font-size:13px;
+    letter-spacing:0.35em;
+    margin-bottom:10px;
+    opacity:0.75;
   }
-  .item:not(.checking) .checking-badge{ display:none; }
-  .item .msg{ font-size:14px; color:var(--ink); line-height:1.6; margin-bottom:6px; white-space:pre-wrap; }
-  .item .time{ font-size:11px; color:rgba(233,228,216,0.4); margin-bottom:12px; }
-  .btn-row{ display:flex; gap:10px; }
-  .btn-row button{
-    flex:1; padding:12px; border:none; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;
+  .noren h1{
+    font-family:"RocknRoll One", sans-serif;
+    color:var(--indigo-deep);
+    font-size:30px;
+    letter-spacing:0.08em;
   }
-  .btn-approve{ background:linear-gradient(135deg, var(--lantern), #a8331a); color:var(--paper); }
-  .btn-reject{ background:rgba(233,228,216,0.08); color:var(--ink); }
-  .btn-row button:disabled{ opacity:0.35; cursor:default; }
-  .decided-tag{
-    text-align:center; font-size:12.5px; padding:10px; border-radius:8px; font-weight:600;
+
+  .wrap{ max-width:760px; margin:0 auto; padding:0 16px 70px; }
+  .sub{
+    text-align:center; font-size:12.5px; color:var(--khaki);
+    margin:22px 0 24px; line-height:1.8;
   }
-  .decided-tag.approved{ background:rgba(212,168,67,0.15); color:var(--gold); }
-  .decided-tag.rejected{ background:rgba(233,228,216,0.06); color:rgba(233,228,216,0.5); }
-  .refresh-btn{
-    display:block; width:100%; padding:12px; margin-bottom:18px;
-    background:rgba(212,168,67,0.1); border:1px solid rgba(212,168,67,0.3); border-radius:10px;
-    color:var(--gold); font-size:13px; cursor:pointer;
+
+  .year-tabs{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:18px;
   }
-  .flag-row{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-  .flag{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:6px 10px; border-radius:8px; font-size:12px; font-weight:600;
+  .year-tab{
+    padding:7px 18px;
+    border:1.5px solid var(--indigo-mid);
+    color:var(--indigo-mid);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
   }
-  .flag-face{ background:rgba(212,168,67,0.15); color:var(--gold); }
-  .flag-word{ background:rgba(201,64,31,0.18); color:#ff8a6b; }
-  .item.has-flag{ border-color:rgba(201,64,31,0.6); }
+  .year-tab.active{
+    background:var(--indigo-mid);
+    color:#fff;
+  }
+
+  .pagination{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    margin-top:24px;
+  }
+  .page-btn{
+    padding:9px 16px;
+    border:1.5px solid var(--indigo-mid);
+    background:#fff;
+    color:var(--indigo-mid);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .page-btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  .page-indicator{
+    font-size:13px;
+    color:var(--khaki);
+    min-width:50px;
+    text-align:center;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+  }
+  @media (min-width:520px){
+    .grid{ grid-template-columns:repeat(3, 1fr); }
+  }
+  .card{
+    background:var(--paper);
+  }
+  .card .thumb{
+    cursor:pointer; display:block; position:relative;
+    aspect-ratio:1/1;
+    overflow:hidden;
+    background-color:#e8d9a8;
+    background-image:linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.75) 50%, transparent 70%);
+    background-size:250% 100%;
+    animation:shimmer 1.3s infinite;
+  }
+  .card .thumb.loaded{ animation:none; background:none; }
+  .card img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    opacity:0;
+    transition:opacity 0.25s;
+  }
+  .card .thumb.loaded img{ opacity:1; }
+  @keyframes shimmer{
+    0%{ background-position:150% 0; }
+    100%{ background-position:-150% 0; }
+  }
+  .card .msg{
+    font-size:11.5px;
+    padding:9px 11px 5px;
+    color:var(--ink);
+    line-height:1.5;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    border-top:1px solid rgba(34,36,42,0.1);
+  }
+  .like-row{
+    display:flex; align-items:center; gap:6px;
+    padding:6px 10px 10px;
+  }
+  .like-btn{
+    display:flex; align-items:center; gap:5px;
+    background:transparent;
+    border:1.5px solid var(--indigo-mid);
+    border-radius:2px;
+    padding:4px 11px;
+    font-size:12px;
+    font-weight:700;
+    color:var(--indigo-mid);
+    cursor:pointer;
+  }
+  .like-btn.liked{
+    background:var(--indigo-mid);
+    color:var(--paper);
+  }
+  .like-btn .heart{ font-size:12px; }
+  .empty{
+    text-align:center;
+    color:var(--khaki);
+    font-size:13px;
+    padding:60px 0;
+  }
+  .spinner{
+    display:inline-block;
+    width:22px; height:22px;
+    border:3px solid rgba(201,162,39,0.25);
+    border-top-color:var(--indigo-mid);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin-bottom:10px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  #lightbox{
+    position:fixed; inset:0;
+    background:rgba(16,20,35,0.94);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:50;
+    padding:24px;
+  }
+  #lightbox.active{ display:flex; }
+  #lightbox .box{ max-width:640px; width:100%; }
+  #lightbox img{ width:100%; border:3px solid var(--gold); display:block; margin-bottom:16px; }
+  #lightbox .msg{ color:var(--paper); font-size:15px; line-height:1.8; text-align:center; white-space:pre-wrap; margin-bottom:18px; }
+  #lightbox .close-btn{
+    display:block; margin:0 auto;
+    padding:10px 30px;
+    background:transparent;
+    border:1.5px solid rgba(247,242,230,0.4);
+    color:rgba(247,242,230,0.65);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
+<div class="noren">
+  <div class="noren-inner">
+    <div class="noren-eyebrow">みさフェス — 2026.9.26</div>
+    <h1>フォトギャラリー</h1>
+  </div>
+</div>
+<div class="noren-fringe"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <div class="wrap">
-  <div class="eyebrow">みさフェス スタッフ専用</div>
-  <h1>ギャラリー承認</h1>
-  <div class="sub">「閲覧用ギャラリーに公開してもよい」にチェックが入った投稿だけを表示しています</div>
-
-  <div class="warn-box">
-    ⚠️ 「公開する」を押す前に、以下をすべて確認してください。<br><br>
-    ☐ 顔が写っていないか<br>
-    ☐ 遠くに小さくでも、人物が写り込んでいないか<br>
-    ☐ 顔が写っていなくても、体型・服装・背景の状況などから<b>個人が特定できてしまわないか</b><br><br>
-    少しでも迷ったら、公開せず「公開しない」を選んでください。<br><br>
-    <span style="opacity:0.8;">※ある程度の大きさの顔や、気になる言葉には自動で印がつきますが、あくまで見落とし防止の補助です。印がなくても、必ずご自身の目で確認してください。</span>
+  <div class="sub">
+    公開OKの写真だけをまとめています。<br>
+    <span style="font-size:11px; opacity:0.85;">掲載中の写真について、取り下げをご希望の場合は、<a href="mailto:misaoyama.chonaikai@gmail.com" style="color:inherit;">misaoyama.chonaikai@gmail.com</a> までご連絡ください。</span>
   </div>
 
-  <button class="refresh-btn" id="refresh-btn">🔄 最新の状態に更新</button>
+  <div id="year-tabs" class="year-tabs" style="display:none;"></div>
 
-  <div class="count-row">
-    <span>承認待ちの候補</span>
-    <span class="count-badge" id="count-badge">0件</span>
+  <div id="grid" class="grid"></div>
+  <div id="pagination" class="pagination"></div>
+  <div id="empty-msg" class="empty" style="display:none;">まだ公開されている写真はありません</div>
+</div>
+
+<div id="lightbox">
+  <div class="box">
+    <img id="lightbox-img" src="">
+    <div class="msg" id="lightbox-msg"></div>
+    <button class="close-btn" id="lightbox-close">閉じる</button>
   </div>
-
-  <div id="list"><div class="empty">読み込み中...</div></div>
 </div>
 
 <script>
 // ▼ 写真・メッセージ用のApps ScriptのURL(投稿ページと同じもの) ▼
 const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu8iWmrG1pRTN1JBiDFLdvfIDtckPsrRD2fT6vkNHunHJi2Nexo_KIvjveO5r7xP_ixw/exec";
 
-// ---------- 合言葉(裏側の承認・取得系の操作を、正しい合言葉を持つ人だけに限定する) ----------
-function getAdminToken_(){
-  let token = localStorage.getItem('misafes_admin_token');
-  if(!token){
-    token = prompt('合言葉を入力してください(承認担当者のみ)') || '';
-    if(token) localStorage.setItem('misafes_admin_token', token);
-  }
-  return token;
-}
-
-// ▼ NGワード一覧(ここに追加・編集してください。差別語・スラング等は、コミュニティに合わせてご自身で追加するのが確実です) ▼
-const NG_WORDS = [
-  // 誹謗中傷・攻撃的表現
-  "死ね", "しね", "殺す", "ころす", "消えろ", "きえろ", "カス", "クズ", "ゴミ", "気持ち悪い", "きもい", "うざい", "ばか", "バカ", "アホ", "あほ",
-  // 犯罪・危険行為を連想させる言葉
-  "覚醒剤", "大麻", "麻薬", "爆弾", "テロ", "殺害予告",
-  // 性的な表現(代表的なもののみ)
-  "エロ", "アダルト",
-  // スパム的な言い回し
-  "副業", "稼げる", "必ず儲かる", "フォローお願いします", "相互フォロー"
-];
-
-// ▼ 個人情報・URL・記号の連打などは、単語ではなく「パターン」で検出します ▼
-const NG_PATTERNS = [
-  { label: "電話番号らしき数字の並び", re: /0\d{1,4}[-‐ー\s]?\d{1,4}[-‐ー\s]?\d{3,4}/ },
-  { label: "メールアドレス", re: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/ },
-  { label: "URL", re: /(https?:\/\/|www\.)\S+/i },
-  { label: "LINE IDらしき記述", re: /line\s*id/i },
-  { label: "SNSアカウントらしき記述(@から始まる)", re: /@[a-zA-Z0-9_]{3,}/ },
-  { label: "同じ文字の連続", re: /(.)\1{7,}/ },
-  { label: "絵文字の連続", re: /(?:[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]){10,}/u }
-];
-
-const listEl = document.getElementById('list');
-const countBadge = document.getElementById('count-badge');
-const refreshBtn = document.getElementById('refresh-btn');
-const decidedKeys = new Set(); // このページを開いてから自分が判定したものを覚えておく(再取得までの二重送信防止)
+const gridEl = document.getElementById('grid');
+const emptyMsg = document.getElementById('empty-msg');
+const yearTabs = document.getElementById('year-tabs');
+const pagination = document.getElementById('pagination');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxMsg = document.getElementById('lightbox-msg');
+const lightboxClose = document.getElementById('lightbox-close');
 
 function escapeHtml(str){
   const d = document.createElement('div');
@@ -161,115 +278,227 @@ function escapeHtml(str){
   return d.innerHTML;
 }
 
-// メッセージにNGワードが含まれているか(部分一致)チェックする
-function checkNgWords(message){
-  if(!message) return [];
-  const wordHits = NG_WORDS.filter(w => message.includes(w));
-  const patternHits = NG_PATTERNS.filter(p => p.re.test(message)).map(p => p.label);
-  return wordHits.concat(patternHits);
+// この端末で「いいね」した写真を覚えておく(同じ端末からの連打防止)
+const LIKED_KEY = 'misafes_gallery_liked';
+let likedSet = new Set();
+try{
+  const saved = localStorage.getItem(LIKED_KEY);
+  if(saved) likedSet = new Set(JSON.parse(saved));
+}catch(err){ likedSet = new Set(); }
+function saveLikedSet(){
+  try{ localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(likedSet))); }catch(err){}
 }
 
-let isFirstLoad = true;
-const renderedKeys = new Set(); // すでに画面に表示済みの投稿(判定中の表示などをリセットしないため)
+async function toggleLike(rowTime, btnEl, countEl){
+  const alreadyLiked = likedSet.has(rowTime);
+  const delta = alreadyLiked ? -1 : 1;
 
-async function loadCandidates(){
-  if(isFirstLoad){
-    listEl.innerHTML = '<div class="empty">読み込み中...</div>';
+  // 先に見た目だけ即座に反映
+  if(alreadyLiked){
+    likedSet.delete(rowTime);
+    btnEl.classList.remove('liked');
+  }else{
+    likedSet.add(rowTime);
+    btnEl.classList.add('liked');
   }
-  try{
-    const res = await fetch(APPSCRIPT_URL + '?action=getGalleryCandidates&token=' + encodeURIComponent(getAdminToken_()), { cache: 'no-store' });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const items = await res.json();
-    const filtered = items.filter(item => !decidedKeys.has(item.time));
-
-    countBadge.textContent = filtered.length + '件';
-
-    const newItems = isFirstLoad ? filtered : filtered.filter(item => !renderedKeys.has(item.time));
-
-    if(isFirstLoad && filtered.length === 0){
-      listEl.innerHTML = '<div class="empty">今のところ、確認待ちの投稿はありません</div>';
-      isFirstLoad = false;
-      return;
-    }
-    if(newItems.length === 0){
-      isFirstLoad = false;
-      return; // 新着がなければ、何もせず静かに終わる(すでに表示中の内容はそのまま)
-    }
-
-    const emptyEl = listEl.querySelector('.empty');
-    if(emptyEl) emptyEl.remove();
-
-    newItems.slice().reverse().forEach(item => {
-      renderedKeys.add(item.time);
-      const el = document.createElement('div');
-      el.className = 'item checking'; // 最初は「判定中」状態でスタート
-      const ngWords = checkNgWords(item.message);
-      el.innerHTML = `
-        <div class="flag-row" id="flags-${btoa(encodeURIComponent(item.time)).replace(/[^a-zA-Z0-9]/g,'')}"></div>
-        <div class="photo-wrap">
-          <img src="${item.photoUrl}" loading="lazy">
-          <div class="checking-badge">🔍 自動チェック中...</div>
-        </div>
-        ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
-        <div class="time">${escapeHtml(item.time)}</div>
-        <div class="btn-row">
-          <button class="btn-reject" disabled>公開しない</button>
-          <button class="btn-approve" disabled>✓ 公開する</button>
-        </div>
-      `;
-      const approveBtn = el.querySelector('.btn-approve');
-      const rejectBtn = el.querySelector('.btn-reject');
-      approveBtn.addEventListener('click', () => submitDecision(item.time, 'approved', el));
-      rejectBtn.addEventListener('click', () => submitDecision(item.time, 'rejected', el));
-      listEl.appendChild(el);
-
-      const flagRow = el.querySelector('.flag-row');
-      if(ngWords.length > 0){
-        el.classList.add('has-flag');
-        flagRow.innerHTML += `<div class="flag flag-word">⚠️ 文章に気になる言葉が含まれています(${escapeHtml(ngWords.join('、'))})</div>`;
-      }
-
-      const imgEl = el.querySelector('img');
-      const finishChecking = () => {
-        el.classList.remove('checking');
-        approveBtn.disabled = false;
-        rejectBtn.disabled = false;
-      };
-      finishChecking();
-    });
-    isFirstLoad = false;
-  }catch(err){
-    if(isFirstLoad){
-      listEl.innerHTML = `<div class="empty">読み込みに失敗しました(${err.message})</div>`;
-    }
-  }
-}
-
-async function submitDecision(rowTime, decision, itemEl){
-  const buttons = itemEl.querySelectorAll('button');
-  buttons.forEach(b => b.disabled = true);
+  saveLikedSet();
+  const currentCount = parseInt(countEl.textContent, 10) || 0;
+  countEl.textContent = Math.max(0, currentCount + delta);
 
   try{
     await fetch(APPSCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'galleryDecision', rowTime, decision, token: getAdminToken_() })
+      body: JSON.stringify({ action: 'toggleLike', rowTime, delta })
     });
-    decidedKeys.add(rowTime);
-    const tag = document.createElement('div');
-    tag.className = 'decided-tag ' + decision;
-    tag.textContent = decision === 'approved' ? '✓ 公開しました' : '公開しないことにしました';
-    itemEl.querySelector('.btn-row').replaceWith(tag);
   }catch(err){
-    buttons.forEach(b => b.disabled = false);
-    alert('送信に失敗しました。もう一度お試しください');
+    // 送信に失敗しても、次回のページ読み込みで実際の数と同期される
   }
 }
 
-refreshBtn.addEventListener('click', loadCandidates);
-loadCandidates();
-setInterval(loadCandidates, 8000); // 8秒おきに自動更新(新着分だけ、そっと追加されます)
+let allGalleryItems = []; // 全年分の投稿を保持しておく
+let selectedYear = null;
+let currentPage = 1;
+const ITEMS_PER_PAGE = 18; // 1ページあたりの表示件数
+
+function extractYear(timeStr){
+  // 投稿日時(例:"Wed Aug 05 2026 06:48:59 GMT+0900")から年を取り出す
+  const m = (timeStr || '').match(/\b(20\d{2})\b/);
+  if(m) return parseInt(m[1], 10);
+  const d = new Date(timeStr);
+  return isNaN(d.getFullYear()) ? null : d.getFullYear();
+}
+
+function renderYearTabs(){
+  const years = Array.from(new Set(allGalleryItems.map(it => extractYear(it.time)).filter(Boolean)))
+    .sort((a, b) => b - a); // 新しい年が先
+  if(years.length <= 1){
+    yearTabs.innerHTML = '';
+    yearTabs.style.display = 'none';
+    return;
+  }
+  yearTabs.style.display = 'flex';
+  if(!selectedYear || !years.includes(selectedYear)) selectedYear = years[0];
+  yearTabs.innerHTML = years.map(y =>
+    `<div class="year-tab ${y === selectedYear ? 'active' : ''}" data-year="${y}">${y}年</div>`
+  ).join('');
+  yearTabs.querySelectorAll('.year-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      selectedYear = parseInt(tab.dataset.year, 10);
+      currentPage = 1;
+      renderYearTabs();
+      renderGalleryGrid();
+    });
+  });
+}
+
+function renderGalleryGrid(){
+  const items = (selectedYear
+    ? allGalleryItems.filter(it => extractYear(it.time) === selectedYear)
+    : allGalleryItems).slice().reverse(); // 新しい投稿が先
+
+  if(items.length === 0){
+    emptyMsg.style.display = 'block';
+    emptyMsg.textContent = 'この年の写真はまだありません';
+    gridEl.innerHTML = '';
+    pagination.innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
+  if(currentPage > totalPages) currentPage = totalPages;
+  if(currentPage < 1) currentPage = 1;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageItems = items.slice(start, start + ITEMS_PER_PAGE);
+
+  emptyMsg.style.display = 'none';
+  gridEl.innerHTML = '';
+  pageItems.forEach(item => {
+    const isLiked = likedSet.has(item.time);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="thumb">
+        <img src="${item.photoUrl}" loading="lazy">
+      </div>
+      ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
+      <div class="like-row">
+        <div class="like-btn ${isLiked ? 'liked' : ''}">
+          <span class="heart">${isLiked ? '❤️' : '🤍'}</span>
+          <span class="like-count">${item.likes || 0}</span>
+        </div>
+      </div>
+    `;
+    const thumbEl = card.querySelector('.thumb');
+    const imgEl = thumbEl.querySelector('img');
+    const likeBtn = card.querySelector('.like-btn');
+    const countEl = card.querySelector('.like-count');
+    if(imgEl.complete && imgEl.naturalWidth > 0){ thumbEl.classList.add('loaded'); }
+    else{ imgEl.addEventListener('load', () => thumbEl.classList.add('loaded')); }
+    thumbEl.addEventListener('click', () => {
+      lightboxImg.src = item.photoUrl;
+      lightboxMsg.textContent = item.message || '';
+      lightbox.classList.add('active');
+    });
+    likeBtn.addEventListener('click', () => {
+      likeBtn.querySelector('.heart').textContent = likeBtn.classList.contains('liked') ? '🤍' : '❤️';
+      toggleLike(item.time, likeBtn, countEl);
+    });
+    gridEl.appendChild(card);
+  });
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  if(totalPages <= 1){
+    pagination.innerHTML = '';
+    return;
+  }
+  pagination.innerHTML = `
+    <button class="page-btn" id="prev-page" ${currentPage === 1 ? 'disabled' : ''}>← 前へ</button>
+    <span class="page-indicator">${currentPage} / ${totalPages}</span>
+    <button class="page-btn" id="next-page" ${currentPage === totalPages ? 'disabled' : ''}>次へ →</button>
+  `;
+  document.getElementById('prev-page').addEventListener('click', () => {
+    if(currentPage > 1){
+      currentPage--;
+      renderGalleryGrid();
+      gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  document.getElementById('next-page').addEventListener('click', () => {
+    currentPage++;
+    renderGalleryGrid();
+    gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+const CACHE_KEY = 'misafes_gallery_cache_v1';
+
+function loadFromCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(err){ return null; }
+}
+function saveToCache(items){
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(items)); }catch(err){}
+}
+
+async function loadGallery(){
+  const cached = loadFromCache();
+
+  if(cached && cached.length > 0){
+    // キャッシュがあれば、通信を待たずにすぐ表示する
+    allGalleryItems = cached;
+    renderYearTabs();
+    renderGalleryGrid();
+  }else{
+    // 初回など、キャッシュがない場合だけ「読み込み中」を出す
+    emptyMsg.innerHTML = '<div class="spinner"></div><div>読み込み中です…</div>';
+    emptyMsg.style.display = 'block';
+    gridEl.innerHTML = '';
+  }
+
+  // 裏側で常に最新版を取りに行き、内容に変化があれば静かに更新する
+  try{
+    const res = await fetch(APPSCRIPT_URL + '?action=getGalleryApproved', { cache: 'no-store' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const items = await res.json();
+
+    const changed = JSON.stringify(items) !== JSON.stringify(cached);
+    allGalleryItems = items;
+    saveToCache(items);
+
+    if(items.length === 0){
+      emptyMsg.textContent = 'まだ公開されている写真はありません';
+      emptyMsg.style.display = 'block';
+      gridEl.innerHTML = '';
+      pagination.innerHTML = '';
+      yearTabs.style.display = 'none';
+      return;
+    }
+    if(changed || !cached){
+      renderYearTabs();
+      renderGalleryGrid();
+    }
+  }catch(err){
+    if(!cached){
+      emptyMsg.textContent = '読み込みに失敗しました。しばらくしてから再度お試しください';
+      emptyMsg.style.display = 'block';
+    }
+    // キャッシュがあれば、通信エラーでも表示済みの内容をそのまま見せておく
+  }
+}
+
+lightboxClose.addEventListener('click', () => lightbox.classList.remove('active'));
+lightbox.addEventListener('click', e => { if(e.target === lightbox) lightbox.classList.remove('active'); });
+
+loadGallery();
+setInterval(loadGallery, 15000); // 15秒おきに自動更新(変化がなければ、画面はそのまま静かに保たれます)
 </script>
 </body>
 </html>
